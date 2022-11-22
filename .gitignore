@@ -1,0 +1,4 @@
+.vscode
+_deps
+cmake-*
+build
