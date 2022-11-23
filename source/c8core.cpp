@@ -63,7 +63,7 @@ int C8Core::init() {
     memset(V, 0, sizeof V);
 
     //load fontset
-    for(int i = 0; i = 0x50; i++) {
+    for(int i = 0; i < 0x50; i++) {
         ram[i] = font[i];
     }
 
@@ -359,5 +359,17 @@ void C8Core::setKeys() {
 }
 
 void C8Core::printStackTrace() {
+    printf("CORE STACK TRACE\n");
+    for(int i = 0; i < 16; i++) {
+        //print io registers
+        printf("V%x: ", i & 0xF);
+        printf("0x%x ", V[i]);
+    }
+    printf("\n");
+    printf("PC: 0x%x\n", pc & 0xFF);
+    printf("Current Opcode: %x\n", opcode & 0xFFFF);
+
+    //print remaining registers
+    //print stack
     return;
 }
