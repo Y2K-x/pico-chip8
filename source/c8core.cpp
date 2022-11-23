@@ -234,7 +234,7 @@ void C8Core::runCycle() {
             pc += 2;
             break;
 
-        case 0xD000: //Dxyn - DRW Vx, Vy, nibble - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+        case 0xD000: { //Dxyn - DRW Vx, Vy, nibble - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
             unsigned short x = V[opcode & 0x0F00];
             unsigned short y = V[opcode & 0x00F0];
             unsigned short h = opcode & 0x000F;
@@ -253,6 +253,7 @@ void C8Core::runCycle() {
             }
             pc += 2;
             break;
+        }
 
         case 0xE000: //Ex9E - SKP Vx - Skip next instruction if key with the value of Vx is pressed.
             if(key[opcode & 0x0F00] == 1)
@@ -267,7 +268,7 @@ void C8Core::runCycle() {
                     pc += 2;
                     break;
 
-                case 0x000A: //Fx0A - LD Vx, K - Wait for a key press, store the value of the key in Vx.
+                case 0x000A: { //Fx0A - LD Vx, K - Wait for a key press, store the value of the key in Vx.
                     bool keyDown = false;
                     for(int i = 0; i < 16; i++) {
                         if(key[i] != 0) {
@@ -279,6 +280,7 @@ void C8Core::runCycle() {
                         return;
                     pc += 2;
                     break;
+                }
 
                 case 0x0015: //Fx15 - LD DT, Vx - Set delay timer = Vx.
                     t_delay = V[opcode & 0x0F00];
