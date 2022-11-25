@@ -1,6 +1,7 @@
 /*
 pico-chip8 Emulator Core
 Written by Y2K for the Bitbuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.php?threads/bitbuilts-2022-secret-santa.5384/)
+Some opcode implementations borrowed from here due to time restraints: https://github.com/JamesGriffin/CHIP-8-Emulator/blob/master/src/chip8.cpp
 */
 
 #include <cstring>
@@ -85,85 +86,101 @@ void C8Core::runCycle() {
 
     //decode opcode
     switch(opcode & 0xF000) {
-        case 0x0000:
+        case 0x0000: {
             switch(opcode & 0x00FF) {
-                case 0x00E0: //00E0 - CLS - Clear Screen
+                case 0x00E0: { //00E0 - CLS - Clear Screen
                     memset(vram, 0, sizeof vram); //clear vram
                     pc += 2;
                     break;
+                }
 
-                case 0x00EE: //00EE - RET - Return from Subroutine
+                case 0x00EE: { //00EE - RET - Return from Subroutine
+                    sp--;
                     pc = stack[sp];
-                    sp = sp > 0 ? sp - 1 : 0;
+                    pc += 2;
                     break;
+                }
 
-                default:
+                default: {
                     printf("Unknown Opcode: 0x%X\n", opcode);
                     break;
+                }
             }
             break;
+        }
 
-        case 0x1000: //1nnn - JP addr - Jump to location nnn
+        case 0x1000: { //1nnn - JP addr - Jump to location nnn
             pc = opcode & 0x0FFF;
             break;
+        }
 
-        case 0x2000: //2nnn - CALL addr - Call subroutine at nnn
-            sp++;
+        case 0x2000: { //2nnn - CALL addr - Call subroutine at nnn
             stack[sp] = pc;
+            sp++;
             pc = opcode & 0x0FFF;
             break;
+        }
 
-        case 0x3000: //3xkk - SE Vx, byte - Skip next instruction if Vx = KK
-            if(V[opcode & 0x0F00] == opcode & 0x00FF)
+        case 0x3000: { //3xkk - SE Vx, byte - Skip next instruction if Vx = KK
+            if(V[(opcode & 0x0F00) >> 8] == opcode & 0x00FF)
                 pc += 2;
             pc += 2;
             break;
+        }
 
-        case 0x4000: //4xkk - SNE Vx, byte - Skip next instruction if Vx != KK
-            if(V[opcode & 0x0F00] != opcode & 0x00FF)
+        case 0x4000: { //4xkk - SNE Vx, byte - Skip next instruction if Vx != KK
+            if(V[(opcode & 0x0F00) >> 8] != opcode & 0x00FF)
                 pc += 2;
             pc += 2;
             break;
+        }
 
-        case 0x5000: //5xy0 - SE Vx, Vy - Skip next instruction if Vx = Vy
-            if(V[opcode & 0x0F00] == V[opcode & 0x00F0])
+        case 0x5000: { //5xy0 - SE Vx, Vy - Skip next instruction if Vx = Vy
+            if(V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4])
                 pc += 2;
             pc += 2;
             break;
+        }
 
-        case 0x6000: //6xkk - LD Vx, byte - Set Vx = kk
-            V[opcode & 0x0F00] = opcode & 0x00FF;
+        case 0x6000: { //6xkk - LD Vx, byte - Set Vx = kk
+            V[(opcode & 0x0F00) >> 8] = opcode & 0x00FF;
             pc += 2;
             break;
+        }
 
-        case 0x7000: //7xkk - ADD Vx, byte - Set Vx = Vx + kk
-            V[opcode & 0x0F00] = V[opcode & 0x0F00] + opcode & 0x00FF;
+        case 0x7000: { //7xkk - ADD Vx, byte - Set Vx = Vx + kk
+            V[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
             pc += 2;
             break;
+        }
 
-        case 0x8000:
+        case 0x8000: {
             switch(opcode & 0x000F) {
-                case 0x0000: //8xy0 - LD Vx, Vy - Set Vx = Vy
-                    V[opcode & 0x0F00] == V[opcode & 0x00F0];
+                case 0x0000: { //8xy0 - LD Vx, Vy - Set Vx = Vy
+                    V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
+                }
 
-                case 0x0001: //8xy1 - OR Vx, Vy - Set Vx = Vx OR Vy
-                    V[opcode & 0x0F00] |= V[opcode & 0x00F0];
+                case 0x0001: { //8xy1 - OR Vx, Vy - Set Vx = Vx OR Vy
+                    V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
+                }
 
-                case 0x0002: //8xy2 - AND Vx, Vy - Set Vx = Vx AND Vy
-                    V[opcode & 0x0F00] &= V[opcode & 0x00F0];
+                case 0x0002: { //8xy2 - AND Vx, Vy - Set Vx = Vx AND Vy
+                    V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
+                }
 
-                case 0x0003: //8xy3 - XOR Vx, Vy - Set Vx = Vx XOR Vy
-                    V[opcode & 0x0F00] ^= V[opcode & 0x00F0];
+                case 0x0003: { //8xy3 - XOR Vx, Vy - Set Vx = Vx XOR Vy
+                    V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
+                }
 
-                case 0x0004: //8xy4 - ADD Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow
+                case 0x0004: { //8xy4 - ADD Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow
                     if(V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode && 0x0F00) >> 8]))
                         V[0xF] = 1; //carry
                     else
@@ -171,108 +188,132 @@ void C8Core::runCycle() {
                     V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
                     pc += 2; 
                     break;
+                }
 
-                case 0x0005: //8xy5 - SUB Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow
-                    if(V[opcode & 0x0F00] > V[opcode & 0x00F0])
+                case 0x0005: { //8xy5 - SUB Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow.
+                    if(V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4])
                         V[0xF] = 1;
                     else
                         V[0xF] = 0;
-                    V[opcode & 0x0F00] -= V[opcode & 0x00F0];
+                    V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
+                }
 
-                case 0x0006: //8xy6 - SHR Vx {, Vy} - Set Vx = Vx SHR 1.
-                    if(V[opcode & 0x0F00] & 1)
+                case 0x0006: { //8xy6 - SHR Vx {, Vy} - Set Vx = Vx SHR 1.
+                    V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;
+                    V[(opcode & 0x0F00) >> 8] >>= 1;
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0007: { //8xy7 - SUBN Vx, Vy - Set Vx = Vy - Vx, set VF = NOT borrow.
+                    if(V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8])
                         V[0xF] = 1;
                     else
                         V[0xF] = 0;
-                    V[opcode & 0x0F00] /= 2;
+                    V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
+                }
 
-                case 0x0007: //8xy7 - SUBN Vx, Vy - Set Vx = Vy - Vx, set VF = NOT borrow.
-                    if(V[opcode & 0x00F0] > V[opcode & 0x0F00])
-                        V[0xF] = 1;
-                    else
-                        V[0xF] = 0;
-                    V[opcode & 0x0F00] -= V[opcode & 0x00F0];
+                case 0x000E: { //8xyE - SHL Vx {, Vy} - Set Vx = Vx SHL 1.
+                    V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
+                    V[(opcode & 0x0F00) >> 8] <<= 1;
                     pc += 2;
                     break;
-
-                case 0x000E: //8xyE - SHL Vx {, Vy} - Set Vx = Vx SHL 1.
-                    if(V[opcode & 0x0F00] & (1 << ((sizeof(char) * 8) - 1)))
-                        V[0xF] = 1;
-                    else
-                        V[0xF] = 0;
-                    V[opcode & 0x0F00] *= 2;
-                    pc += 2;
-                    break;
+                }
                     
-                default:
+                default: {
                     printf("Unknown Opcode: 0x%X\n", opcode);
                     break;
-            }
-            break;
-
-        case 0x9000: //9xy0 - SNE Vx, Vy - Skip next instruction if Vx != Vy.
-            if(V[opcode & 0x0F00] != V[opcode & 0x00F0])
-                pc += 2;
-            pc += 2;
-            break;
-
-        case 0xA000: //ANNN - LD I, addr - Sets I to the address NNN
-            index = opcode & 0x0FFF;
-            pc += 2;
-            break;
-
-        case 0xB000: //Bnnn - JP V0, addr - Jump to location nnn + V0
-            pc = (opcode & 0x0FFF) + V[0];
-            break;
-
-        case 0xC000: //Cxkk - RND Vx, byte - Set Vx = random byte AND kk.
-            V[opcode & 0x0F00] = (rand() % 256) & (opcode & 0x00FF);
-            pc += 2;
-            break;
-
-        case 0xD000: { //Dxyn - DRW Vx, Vy, nibble - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
-            unsigned short x = V[opcode & 0x0F00];
-            unsigned short y = V[opcode & 0x00F0];
-            unsigned short h = opcode & 0x000F;
-            unsigned short px;
-
-            V[0xF] = 0;
-            for(int yLine = 0; yLine < h; yLine++) {
-                px = ram[index + yLine];
-                for(int xLine = 0; xLine < 8; xLine++) {
-                    if((px & (0x80 >> xLine)) != 0) {
-                        if(vram[(x + xLine + ((y + yLine) * 64))] == 1)
-                            V[0xF] = 1;
-                        ram[x + xLine + ((y + yLine) * 64)] ^= 1;
-                    }
                 }
             }
+            break;
+        }
+
+        case 0x9000: { //9xy0 - SNE Vx, Vy - Skip next instruction if Vx != Vy.
+            if(V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4])
+                pc += 2;
             pc += 2;
             break;
         }
 
-        case 0xE000: //Ex9E - SKP Vx - Skip next instruction if key with the value of Vx is pressed.
-            if(key[opcode & 0x0F00] == 1)
-                pc += 2;
+        case 0xA000: { //ANNN - LD I, addr - Sets I to the address NNN
+            index = opcode & 0x0FFF;
             pc += 2;
             break;
+        }
 
-        case 0xF000:
-            switch(opcode & 0x00FF) {
-                case 0x0007: //Fx07 - LD Vx, DT - Set Vx = delay timer value.
-                    V[opcode & 0x0F00] = t_delay;
+        case 0xB000: { //Bnnn - JP V0, addr - Jump to location nnn + V0
+            pc = (opcode & 0x0FFF) + V[0];
+            break;
+        }
+
+        case 0xC000: { //Cxkk - RND Vx, byte - Set Vx = random byte AND kk.
+            V[(opcode & 0x0F00) >> 8] = (rand() % 256) & (opcode & 0x00FF);
+            pc += 2;
+            break;
+        }
+
+        case 0xD000: { //Dxyn - DRW Vx, Vy, nibble - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+            unsigned short x = V[(opcode & 0x0F00) >> 8];
+            unsigned short y = V[(opcode & 0x00F0) >> 4];
+            unsigned short h = opcode & 0x000F;
+            unsigned short px;
+
+            V[0xF] = 0;
+            for (int yline = 0; yline < h; yline++) {
+                px = ram[index + yline];
+                for(int xline = 0; xline < 8; xline++) {
+                    if((px & (0x80 >> xline)) != 0) {
+                        if(vram[(x + xline + ((y + yline) * 64))] == 1){
+                            V[0xF] = 1;
+                        }
+                        vram[x + xline + ((y + yline) * 64)] ^= 1;
+                    }
+                }
+            }
+            pc += 2;
+        }
+
+        case 0xE000: { //Ex9E - SKP Vx - Skip next instruction if key with the value of Vx is pressed.
+            switch (opcode & 0x00FF) {
+                case 0x009E: {
+                    if(key[V[(opcode & 0x0F00) >> 8]] != 0)
+                        pc += 2;
+                    pc += 2;
+                }
+
+                case 0x00A1: { //ExA1 - SKNP Vx - Skip next instruction if key with the value of Vx is not pressed.
+                    if (key[V[(opcode & 0x0F00) >> 8]] == 0)
+                        pc +=  2;
                     pc += 2;
                     break;
+                }
+
+                default: {
+                    printf("Unknown Opcode: 0x%X\n", opcode);
+                    break;
+                }
+            }
+            
+            break;
+        }
+
+        case 0xF000: {
+            switch(opcode & 0x00FF) {
+                case 0x0007: { //Fx07 - LD Vx, DT - Set Vx = delay timer value.
+                    V[(opcode & 0x0F00) >> 8] = t_delay;
+                    pc += 2;
+                    break;
+                }
 
                 case 0x000A: { //Fx0A - LD Vx, K - Wait for a key press, store the value of the key in Vx.
                     bool keyDown = false;
                     for(int i = 0; i < 16; i++) {
                         if(key[i] != 0) {
-                            V[opcode & 0x0F00] = i;
+                            V[(opcode & 0x0F00) >> 8] = i;
                             keyDown = true;
                         }
                     }
@@ -282,58 +323,72 @@ void C8Core::runCycle() {
                     break;
                 }
 
-                case 0x0015: //Fx15 - LD DT, Vx - Set delay timer = Vx.
-                    t_delay = V[opcode & 0x0F00];
+                case 0x0015: { //Fx15 - LD DT, Vx - Set delay timer = Vx.
+                    t_delay = V[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
+                }
 
-                case 0x0018: //Fx18 - LD ST, Vx - Set sound timer = Vx.
-                    t_sound = V[opcode & 0x0F00];
+                case 0x0018: { //Fx18 - LD ST, Vx - Set sound timer = Vx.
+                    t_sound = V[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
+                }
 
-                case 0x001E: //Fx1E - ADD I, Vx - Set I = I + Vx.
-                    index += V[opcode & 0x0F00];
+                case 0x001E: { //Fx1E - ADD I, Vx - Set I = I + Vx.
+                    if(index + V[(opcode & 0x0F00) >> 8] > 0xFFF)
+                        V[0xF] = 1;
+                    else
+                        V[0xF] = 0;
+                    index += V[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
+                }
 
-                case 0x0029: //Fx29 - LD F, Vx - Set I = location of sprite for digit Vx.
-                    index = V[opcode & 0x0F00] * 0x5;
+                case 0x0029: { //Fx29 - LD F, Vx - Set I = location of sprite for digit Vx.
+                    index = V[(opcode & 0x0F00) >> 8] * 0x5;
                     pc += 2;
                     break;
+                }
 
-                case 0x0033: //Fx33 - LD B, Vx - Store BCD representation of Vx in memory locations I, I+1, and I+2.
+                case 0x0033: { //Fx33 - LD B, Vx - Store BCD representation of Vx in memory locations I, I+1, and I+2.
                     ram[index] = V[(opcode & 0x0F00) >> 8] / 100;
                     ram[index + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
-                    ram[index + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 100;
+                    ram[index + 2] = V[(opcode & 0x0F00) >> 8] % 10;
                     pc += 2;
                     break;
+                }
 
-                case 0x0055: //Fx55 - LD [I], Vx - Store registers V0 through Vx in memory starting at location I.
-                    for(int i = 0; i <= (opcode & 0x0F00); i++) {
+                case 0x0055: { //Fx55 - LD [I], Vx - Store registers V0 through Vx in memory starting at location I.
+                    for(int i = 0; i <= (opcode & 0x0F00) >> 8; i++) {
                         ram[index + i] = V[i];
                     }
-                    index += (opcode & 0x0F00) + 1;
+                    index += ((opcode & 0x0F00) >> 8) + 1;
                     pc += 2;
                     break;
+                }
 
-                case 0x0065: //Fx65 - LD Vx, [I] - Read registers V0 through Vx from memory starting at location I.
-                    for(int i = 0; i <= (opcode & 0x0F00); i++) {
+                case 0x0065: { //Fx65 - LD Vx, [I] - Read registers V0 through Vx from memory starting at location I.
+                    for(int i = 0; i <= (opcode & 0x0F00) >> 8; i++) {
                         V[i] = ram[index + i];
                     }
-                    index += (opcode & 0x0F00) + 1;
+                    index += ((opcode & 0x0F00) >> 8) + 1;
                     pc += 2;
                     break;
+                }
 
-                default:
+                default: {
                     printf("Unknown Opcode: 0x%X\n", opcode);
                     break;
+                }
             }
             break;
+        }
 
-        default:
+        default: {
             printf("Unknown Opcode: 0x%X\n", opcode);
             break;
+        }
     }
 
     //update timers
@@ -361,15 +416,20 @@ void C8Core::setKeys() {
 void C8Core::printStackTrace() {
     printf("CORE STACK TRACE\n");
     for(int i = 0; i < 16; i++) {
-        //print io registers
         printf("V%x: ", i & 0xF);
         printf("0x%x ", V[i]);
     }
-    printf("\n");
-    printf("PC: 0x%x\n", pc & 0xFF);
-    printf("Current Opcode: %x\n", opcode & 0xFFFF);
 
-    //print remaining registers
-    //print stack
+    printf("\n");
+    printf("PC: 0x%x ", (unsigned short)pc);
+    printf("SP: 0x%x ", (unsigned short)sp);
+    printf("I: 0x%x\n", (unsigned short)index);
+    printf("Current Opcode: %x\n", (unsigned short)opcode);
+
+    printf("Stack:\n");
+    for(int i = 0; i < 16; i++) {
+        printf("0x%x ", stack[i]);
+    }
+
     return;
 }
