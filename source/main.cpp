@@ -21,8 +21,7 @@ int main() {
 
     while(1) {
         core->runCycle();
-        printf("\x1b[2J\r");
-        core->printStackTrace();
-        sleep_ms(100);
+        //core->printStackTrace();
+        core->debugDraw();
     }
 }

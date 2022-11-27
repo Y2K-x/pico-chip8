@@ -10,11 +10,12 @@ class C8Core {
         int init();
         void runCycle();
         void draw();
+        void debugDraw();
         void setKeys();
         void printStackTrace();
     private:
-        unsigned char vram[SCREEN_WIDTH * SCREEN_HEIGHT];
         unsigned char ram[4096];
+        unsigned char vram[SCREEN_WIDTH * SCREEN_HEIGHT];
 
         unsigned short stack[16];
         unsigned short sp;
@@ -29,6 +30,8 @@ class C8Core {
 
         unsigned char t_delay;
         unsigned char t_sound;
+
+        char drawReady;
 };
 
 #endif
