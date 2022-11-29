@@ -92,7 +92,7 @@ int C8Core::init() {
     memset(V, 0, sizeof V);
     memset(key, 0, sizeof key);
 
-    //load fontset
+    //load fontset, which must be resident in chip8 ram due to some shenannigans some programs do with it
     for(int i = 0; i < 0x50; i++) {
         ram[i] = font[i];
     }
@@ -101,7 +101,7 @@ int C8Core::init() {
     t_delay = 0x0;
     t_sound = 0x0;
 
-    //load ROM into RAM
+    //load ROM, also must be resident in RAM, chip8 is weird, yes programs can and will override themselves
     for(int i = 0; i < (sizeof(data) / sizeof(data[0])); i++) {
         ram[i + 0x200] = (unsigned char)data[i];
     }
@@ -296,10 +296,10 @@ void C8Core::runCycle() {
                 px = ram[index + yline];
                 for(int xline = 0; xline < 8; xline++) {
                     if((px & (0x80 >> xline)) != 0) {
-                        if(vram[(x + xline + ((y + yline) * 64))] == 1){
+                        if(vram[(x + xline + ((y + yline) * SCREEN_WIDTH))] == 1){
                             V[0xF] = 1;
                         }
-                        vram[x + xline + ((y + yline) * 64)] ^= 1;
+                        vram[x + xline + ((y + yline) * SCREEN_WIDTH)] ^= 1;
                     }
                 }
             }
@@ -455,10 +455,6 @@ void C8Core::debugDraw() {
         drawReady = 0;
     }
 
-    return;
-}
-
-void C8Core::setKeys() {
     return;
 }
 
