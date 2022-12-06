@@ -7,7 +7,22 @@ const int col_pins[4] = {2, 3, 4, 5};
 
 C8Core *core;
 
+struct repeating_timer cpuTimer;
+struct repeating_timer timerUpdateTimer;
+
 void readInput();
+
+bool core_cycle_callback(struct repeating_timer *t) {
+    readInput();
+    core->runCycle();
+    core->draw();
+    return true;
+}
+
+bool core_timer_callback(struct repeating_timer *t) {
+    core->updateTimers();
+    return true;
+}
 
 int main() {
     stdio_init_all();
@@ -26,12 +41,10 @@ int main() {
     core = new C8Core();
     core->init();
 
-    while(1) {
-        readInput();
-        core->runCycle();
-        core->draw();
-        sleep_us(2000);
-    }
+    add_repeating_timer_us(2000, core_cycle_callback, NULL, &cpuTimer);
+    add_repeating_timer_us(16666, core_timer_callback, NULL, &timerUpdateTimer);
+
+   while(1) {}
 }
 
 void readInput() {

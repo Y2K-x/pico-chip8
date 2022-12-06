@@ -295,10 +295,10 @@ void C8Core::runCycle() {
         }
 
         case 0xD000: { //Dxyn - DRW Vx, Vy, nibble - Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
-            unsigned short x = V[(opcode & 0x0F00) >> 8];
-            unsigned short y = V[(opcode & 0x00F0) >> 4];
-            unsigned short h = (opcode & 0x000F);
-            unsigned short px;
+            uint16_t x = V[(opcode & 0x0F00) >> 8];
+            uint16_t y = V[(opcode & 0x00F0) >> 4];
+            uint16_t h = (opcode & 0x000F);
+            uint16_t px;
 
             V[0xF] = 0;
             for (int yline = 0; yline < h; yline++) {
@@ -430,7 +430,10 @@ void C8Core::runCycle() {
         }
     }
 
-    //update timers
+    return;
+}
+
+void C8Core::updateTimers() {
     if(t_delay > 0)
         --t_delay;
 
@@ -440,8 +443,6 @@ void C8Core::runCycle() {
         }
         --t_sound;
     }
-
-    return;
 }
 
 void C8Core::draw() {

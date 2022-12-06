@@ -18,6 +18,7 @@ class C8Core {
         C8Core();
         void init();
         void runCycle();
+        void updateTimers();
         void draw();
         void debugDraw();
         void printStackTrace();
