@@ -8,6 +8,8 @@ Some opcode implementations borrowed from here due to time restraints: https://g
 #include <stdlib.h>
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "hardware/spi.h"
+#include "ssd1306.h"
 #include "c8core.hpp"
 
 const unsigned char font[80] = {
@@ -31,7 +33,7 @@ const unsigned char font[80] = {
 
 //opcode test ROM
 /*
-const unsigned char rom[478] = {
+const uint8_t data[478] = {
     0x12, 0x4E, 0xEA, 0xAC, 0xAA, 0xEA, 0xCE, 0xAA, 0xAA, 0xAE, 0xE0, 0xA0, 0xA0, 0xE0, 0xC0, 0x40, 
     0x40, 0xE0, 0xE0, 0x20, 0xC0, 0xE0, 0xE0, 0x60, 0x20, 0xE0, 0xA0, 0xE0, 0x20, 0x20, 0x60, 0x40, 
     0x20, 0x40, 0xE0, 0x80, 0xE0, 0xE0, 0xE0, 0x20, 0x20, 0x20, 0xE0, 0xE0, 0xA0, 0xE0, 0xE0, 0xE0, 
@@ -65,6 +67,7 @@ const unsigned char rom[478] = {
 };
 */
 
+//keypad test ROM
 const uint8_t data[114] = {
     0x12, 0x4E, 0x08, 0x19, 0x01, 0x01, 0x08, 0x01, 0x0F, 0x01, 0x01, 0x09, 0x08, 0x09, 0x0F, 0x09, 
     0x01, 0x11, 0x08, 0x11, 0x0F, 0x11, 0x01, 0x19, 0x0F, 0x19, 0x16, 0x01, 0x16, 0x09, 0x16, 0x11, 
@@ -78,7 +81,13 @@ const uint8_t data[114] = {
 
 C8Core::C8Core() {}
 
-int C8Core::init() {
+void C8Core::init() {
+    //init & clear display
+    display = new SSD1306(128, 32, spi0, 8000*1000, 19, 16, 18, 20, 17);
+    display->init();
+    display->clear();
+    display->update();
+
     //init registers and memory
     pc = 0x200;
     opcode = 0;
@@ -103,10 +112,10 @@ int C8Core::init() {
 
     //load ROM, also must be resident in RAM, chip8 is weird, yes programs can and will override themselves
     for(int i = 0; i < (sizeof(data) / sizeof(data[0])); i++) {
-        ram[i + 0x200] = (unsigned char)data[i];
+        ram[i + 0x200] = data[i];
     }
 
-    return 0;
+    return;
 }
 
 void C8Core::runCycle() {
@@ -436,25 +445,21 @@ void C8Core::runCycle() {
 }
 
 void C8Core::draw() {
-    return;
-}
-
-void C8Core::debugDraw() {
     if(drawReady) {
-        printf("\x1b[2J\r");
+        display->clear();
+        uint8_t *buffer = display->buffer();
+
         for(int y = 0; y < SCREEN_HEIGHT; y++) {
             for(int x = 0; x < SCREEN_WIDTH; x++) {
-                if(vram[(y * SCREEN_WIDTH) + x] > 0)
-                    printf("\u2588\u2588");
-                else
-                    printf("\u0020\u0020");
+                if(vram[(y * SCREEN_WIDTH) + x] > 0) {
+                    buffer[(x * 2) + (y / 8) * 128] |= (1 << (y & 7));
+                }
             }
-            printf("\n");
         }
 
+        display->update();
         drawReady = 0;
     }
-
     return;
 }
 

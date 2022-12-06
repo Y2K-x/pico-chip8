@@ -1,10 +1,12 @@
 #ifndef C8CORE_H
 #define C8CORE_H
 
+#include "ssd1306.h"
+
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
 
-const unsigned char keyMap[4][4] = {
+const uint8_t keyMap[4][4] = {
     {0x1, 0x2, 0x3, 0xC},
     {0x4, 0x5, 0x6, 0xD},
     {0x7, 0x8, 0x9, 0xE},
@@ -14,30 +16,32 @@ const unsigned char keyMap[4][4] = {
 class C8Core {
     public:
         C8Core();
-        int init();
+        void init();
         void runCycle();
         void draw();
         void debugDraw();
         void printStackTrace();
 
-        unsigned char key[16];
+        uint8_t key[16];
     private:
-        unsigned char ram[4096];
-        unsigned char vram[SCREEN_WIDTH * SCREEN_HEIGHT];
+        SSD1306 *display;
 
-        unsigned short stack[16];
-        unsigned short sp;
+        uint8_t ram[4096];
+        uint8_t vram[SCREEN_WIDTH * SCREEN_HEIGHT];
 
-        unsigned short opcode;
+        uint16_t stack[16];
+        uint16_t sp;
 
-        unsigned char V[16];
-        unsigned short index;
-        unsigned short pc;     
+        uint16_t opcode;
 
-        unsigned char t_delay;
-        unsigned char t_sound;
+        uint8_t V[16];
+        uint16_t index;
+        uint16_t pc;     
 
-        char drawReady;
+        uint8_t t_delay;
+        uint8_t t_sound;
+
+        uint8_t drawReady;
 };
 
 #endif
