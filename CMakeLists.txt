@@ -11,6 +11,7 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME}
     source/main.cpp
     source/c8core.cpp
+    source/ssd1306.cpp
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
@@ -18,6 +19,7 @@ pico_add_extra_outputs(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_runtime
+    hardware_spi
 )
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
