@@ -1,3 +1,9 @@
+/*
+Pico-CHIP-8
+A CHIP-8 emulator hardware project - developed by Y2K
+Created for the BitBuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.php?threads/bitbuilts-2022-secret-santa.5384/)
+*/
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "c8core.hpp"

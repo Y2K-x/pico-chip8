@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
+add_subdirectory(no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build)
+
 add_executable(${PROJECT_NAME}
     source/main.cpp
     source/c8core.cpp
@@ -20,6 +22,7 @@ target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_runtime
     hardware_spi
+    FatFs_SPI
 )
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
