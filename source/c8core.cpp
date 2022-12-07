@@ -12,6 +12,7 @@ Some opcode implementations borrowed from here due to time restraints: https://g
 #include "ssd1306.h"
 #include "c8core.hpp"
 
+//Standard CHIP-8 font
 const unsigned char font[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -78,6 +79,7 @@ const uint8_t data[114] = {
     0x32, 0x10, 0x12, 0x52, 0xF2, 0x0A, 0x22, 0x2A, 0xA2, 0x22, 0xD0, 0x17, 0x22, 0x42, 0xD0, 0x17, 
     0x12, 0x64
 };
+
 
 C8Core::C8Core() {}
 
@@ -434,32 +436,36 @@ void C8Core::runCycle() {
 }
 
 void C8Core::updateTimers() {
+    //update delay timer
     if(t_delay > 0)
         --t_delay;
 
+    //update sound timer & beep the speaker
     if(t_sound > 0) {
-        if(t_sound == 1) {
-            //beep
-        }
+        gpio_put(8, true);
         --t_sound;
     }
+    else
+        gpio_put(8, false);
 }
 
 void C8Core::draw() {
     if(drawReady) {
-        display->clear();
-        uint8_t *buffer = display->buffer();
+        display->clear(); //clear display
+        uint8_t *buffer = display->buffer(); //grab pointer to the display buffer
 
+        //iterate through CHIP-8 VRAM
         for(int y = 0; y < SCREEN_HEIGHT; y++) {
             for(int x = 0; x < SCREEN_WIDTH; x++) {
+                //check if VRAM position contains an on pixel, then write to OLED display buffer
                 if(vram[(y * SCREEN_WIDTH) + x] > 0) {
                     buffer[(x * 2) + (y / 8) * 128] |= (1 << (y & 7));
                 }
             }
         }
 
-        display->update();
-        drawReady = 0;
+        display->update(); //update display
+        drawReady = 0; //done
     }
     return;
 }

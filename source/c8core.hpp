@@ -41,8 +41,10 @@ class C8Core {
 
         uint8_t t_delay;
         uint8_t t_sound;
+        uint8_t beepCounter;
 
         uint8_t drawReady;
+        
 };
 
 #endif
