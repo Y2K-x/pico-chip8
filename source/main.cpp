@@ -7,11 +7,13 @@ Created for the BitBuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.ph
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "c8core.hpp"
+#include "sd_io.hpp"
 
 const int row_pins[4] = {0,1,2,3};
 const int col_pins[4] = {7,6,5,4};
 
 C8Core *core;
+SD_IO *sd_io;
 
 struct repeating_timer cpuTimer;
 struct repeating_timer timerUpdateTimer;
@@ -52,10 +54,16 @@ int main() {
     gpio_set_dir(8, true);
     gpio_pull_down(8);
 
+    //init SD
+    sd_io = new SD_IO();
+    sd_io->init();
+    sd_io->readFileList(0);
+
     //beep test, may remove later but its kinda charming lol
     gpio_put(8, true);
     sleep_ms(100);
     gpio_put(8, false);
+    
 
     //init CHIP-8 core
     core = new C8Core();
