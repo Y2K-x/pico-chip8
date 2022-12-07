@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
     source/main.cpp
     source/c8core.cpp
     source/ssd1306.cpp
+    source/sd_config.cpp
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
