@@ -9,19 +9,41 @@ Created for the BitBuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.ph
 #include "pico/stdlib.h"
 #include "c8core.hpp"
 #include "sd_io.hpp"
+#include "gfx.hpp"
 
 const int row_pins[4] = {0,1,2,3};
 const int col_pins[4] = {7,6,5,4};
 
+uint8_t nosd_bmp[36] = {
+	0x3f, 0xfc, 
+	0x20, 0x04, 
+	0x20, 0x04, 
+	0x20, 0x04, 
+	0x21, 0x04, 
+	0x21, 0x04, 
+	0x21, 0x04, 
+	0x41, 0x04, 
+	0x81, 0x04, 
+	0x81, 0x04, 
+	0x41, 0x04, 
+	0x80, 0x04, 
+	0x80, 0x04, 
+	0x81, 0x04, 
+	0x80, 0x04, 
+	0x80, 0x04, 
+	0x80, 0x04, 
+	0xff, 0xfc, 
+};
+
+SSD1306 *display;
 C8Core *core;
 SD_IO *sd_io;
+GFX *gfx;
 
 struct repeating_timer cpuTimer;
 struct repeating_timer timerUpdateTimer;
 
 void readInput();
-
-
 
 //CHIP-8 CPU core clock cycle callback - runs at aprox. 500hz
 bool core_cycle_callback(struct repeating_timer *t) {
@@ -40,7 +62,13 @@ bool core_timer_callback(struct repeating_timer *t) {
 int main() {
     //init serial output
     stdio_init_all();
-    sleep_ms(5000);
+
+    //init display
+    //display = new SSD1306(128, 64, spi0, 8000*1000, 19, 16, 18, 20, 17);
+    //display->init();
+    //hexDump("blah", display->buffer(), 512, 16);
+    //display->clear();
+    //display->update();
 
     //init input pins
     for(int i = 0; i < 4; i++) {
@@ -63,6 +91,10 @@ int main() {
     sd_io->init();
     sd_io->readFileList();
 
+    //gfx = new GFX(display);
+    //gfx->drawBmp(56, 18, nosd_bmp, 16, 18);
+    //gfx->drawString(45, 39, "NO SD");
+
     //beep test, may remove later but its kinda charming lol
     gpio_put(8, true);
     sleep_ms(100);
@@ -70,11 +102,11 @@ int main() {
 
     //init CHIP-8 core
     core = new C8Core();
-    uint32_t index = 0;
+    uint32_t index = 11;
     core->rom = (char *)malloc(sd_io->files[index].filesize);
     core->file = sd_io->files[index];
     sd_io->loadFileToBuffer(core->rom, index);
-    core->init();
+    core->init(display);
 
     //start update timers for CPU cycle & timers
     add_repeating_timer_us(2000, core_cycle_callback, NULL, &cpuTimer);

@@ -85,12 +85,13 @@ const uint8_t data[114] = {
 
 C8Core::C8Core() {}
 
-void C8Core::init() {
-    //init & clear display
-    display = new SSD1306(128, 32, spi0, 8000*1000, 19, 16, 18, 20, 17);
-    display->init();
-    display->clear();
-    display->update();
+void C8Core::init(SSD1306 *display) {
+    //init clear display
+    //this->display = display;
+    this->display = new SSD1306(128, 64, spi0, 8000*1000, 19, 16, 18, 20, 17);
+    this->display->init();
+    this->display->clear();
+    this->display->update();
 
     //init registers and memory
     pc = 0x200;
@@ -465,14 +466,16 @@ void C8Core::updateTimers() {
 void C8Core::draw() {
     if(drawReady) {
         display->clear(); //clear display
-        uint8_t *buffer = display->buffer(); //grab pointer to the display buffer
 
         //iterate through CHIP-8 VRAM
         for(int y = 0; y < SCREEN_HEIGHT; y++) {
             for(int x = 0; x < SCREEN_WIDTH; x++) {
-                //check if VRAM position contains an on pixel, then write to OLED display buffer
+                //check if VRAM position contains an on pixel
                 if(vram[(y * SCREEN_WIDTH) + x] > 0) {
-                    buffer[(x * 2) + (y / 8) * 128] |= (1 << (y & 7));
+                    display->draw_pixel(x * 2, y * 2, SSD1306_COLOR_ON);
+                    display->draw_pixel((x * 2) + 1, y * 2, SSD1306_COLOR_ON);
+                    display->draw_pixel(x * 2, (y * 2) + 1, SSD1306_COLOR_ON);
+                    display->draw_pixel((x * 2) + 1, (y * 2) + 1, SSD1306_COLOR_ON);
                 }
             }
         }

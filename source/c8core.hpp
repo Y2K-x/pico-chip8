@@ -17,7 +17,7 @@ const uint8_t keyMap[4][4] = {
 class C8Core {
     public:
         C8Core();
-        void init();
+        void init(SSD1306 *display);
         void runCycle();
         void updateTimers();
         void draw();
