@@ -5,6 +5,7 @@ Created for the BitBuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.ph
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "pico/stdlib.h"
 #include "c8core.hpp"
 #include "sd_io.hpp"
@@ -19,6 +20,8 @@ struct repeating_timer cpuTimer;
 struct repeating_timer timerUpdateTimer;
 
 void readInput();
+
+
 
 //CHIP-8 CPU core clock cycle callback - runs at aprox. 500hz
 bool core_cycle_callback(struct repeating_timer *t) {
@@ -37,6 +40,7 @@ bool core_timer_callback(struct repeating_timer *t) {
 int main() {
     //init serial output
     stdio_init_all();
+    sleep_ms(5000);
 
     //init input pins
     for(int i = 0; i < 4; i++) {
@@ -57,17 +61,21 @@ int main() {
     //init SD
     sd_io = new SD_IO();
     sd_io->init();
-    sd_io->readFileList(0);
+    sd_io->readFileList();
+
+    char *rom;
+    rom = (char *)malloc(sd_io->files[0].filesize);
+    sd_io->loadFileToBuffer(rom);
+    
 
     //beep test, may remove later but its kinda charming lol
     gpio_put(8, true);
     sleep_ms(100);
     gpio_put(8, false);
-    
 
     //init CHIP-8 core
     core = new C8Core();
-    core->init();
+    core->init(rom);
 
     //start update timers for CPU cycle & timers
     add_repeating_timer_us(2000, core_cycle_callback, NULL, &cpuTimer);

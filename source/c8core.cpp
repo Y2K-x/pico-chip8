@@ -12,6 +12,9 @@ Some opcode implementations borrowed from here due to time restraints: https://g
 #include "ssd1306.h"
 #include "c8core.hpp"
 
+//comment to disable printing to serial when CPU core encounters an unknown opcode
+//#define PRINT_UNK_OPCODE
+
 //Standard CHIP-8 font
 const unsigned char font[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -83,7 +86,7 @@ const uint8_t data[114] = {
 
 C8Core::C8Core() {}
 
-void C8Core::init() {
+void C8Core::init(char *rom) {
     //init & clear display
     display = new SSD1306(128, 32, spi0, 8000*1000, 19, 16, 18, 20, 17);
     display->init();
@@ -113,8 +116,8 @@ void C8Core::init() {
     t_sound = 0x0;
 
     //load ROM, also must be resident in RAM, chip8 is weird, yes programs can and will override themselves
-    for(int i = 0; i < (sizeof(data) / sizeof(data[0])); i++) {
-        ram[i + 0x200] = data[i];
+    for(int i = 0; i < (sizeof(rom) / sizeof(rom[0])); i++) {
+        ram[i + 0x200] = (uint8_t)rom[i];
     }
 
     return;
@@ -141,8 +144,11 @@ void C8Core::runCycle() {
                     break;
                 }
 
+                
                 default: {
+#ifdef PRINT_UNK_OPCODE
                     printf("Unknown Opcode: 0x%X\n", opcode);
+#endif
                     break;
                 }
             }
@@ -265,7 +271,9 @@ void C8Core::runCycle() {
                 }
                     
                 default: {
+#ifdef PRINT_UNK_OPCODE
                     printf("Unknown Opcode: 0x%X\n", opcode);
+#endif
                     break;
                 }
             }
@@ -334,7 +342,9 @@ void C8Core::runCycle() {
                 }
 
                 default: {
+#ifdef PRINT_UNK_OPCODE
                     printf("Unknown Opcode: 0x%X\n", opcode);
+#endif
                     break;
                 }
             }
@@ -419,7 +429,9 @@ void C8Core::runCycle() {
                 }
 
                 default: {
+#ifdef PRINT_UNK_OPCODE
                     printf("Unknown Opcode: 0x%X\n", opcode);
+#endif
                     break;
                 }
             }
@@ -427,7 +439,9 @@ void C8Core::runCycle() {
         }
 
         default: {
+#ifdef PRINT_UNK_OPCODE
             printf("Unknown Opcode: 0x%X\n", opcode);
+#endif
             break;
         }
     }

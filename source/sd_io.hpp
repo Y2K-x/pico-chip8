@@ -5,14 +5,22 @@
 #include "f_util.h"
 #include "hw_config.h"
 
+typedef struct File {
+    uint32_t filesize;
+    char *filename;
+} File;
+
 class SD_IO {
     public:
         SD_IO();
         void init();
         uint32_t readFileCount();
-        void readFileList(uint32_t count);
+        void readFileList();
+        void loadFileToBuffer(char *dest);
+        File *files;
     private:
         sd_card_t *pSD;
+        
 
 };
 
