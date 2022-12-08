@@ -2,6 +2,7 @@
 #define C8CORE_H
 
 #include "ssd1306.h"
+#include "sd_io.hpp"
 
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
@@ -16,7 +17,7 @@ const uint8_t keyMap[4][4] = {
 class C8Core {
     public:
         C8Core();
-        void init(char *rom);
+        void init();
         void runCycle();
         void updateTimers();
         void draw();
@@ -24,6 +25,8 @@ class C8Core {
         void printStackTrace();
 
         uint8_t key[16];
+        char *rom;
+        File file;
     private:
         SSD1306 *display;
 

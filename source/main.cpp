@@ -63,11 +63,6 @@ int main() {
     sd_io->init();
     sd_io->readFileList();
 
-    char *rom;
-    rom = (char *)malloc(sd_io->files[0].filesize);
-    sd_io->loadFileToBuffer(rom);
-    
-
     //beep test, may remove later but its kinda charming lol
     gpio_put(8, true);
     sleep_ms(100);
@@ -75,7 +70,11 @@ int main() {
 
     //init CHIP-8 core
     core = new C8Core();
-    core->init(rom);
+    uint32_t index = 0;
+    core->rom = (char *)malloc(sd_io->files[index].filesize);
+    core->file = sd_io->files[index];
+    sd_io->loadFileToBuffer(core->rom, index);
+    core->init();
 
     //start update timers for CPU cycle & timers
     add_repeating_timer_us(2000, core_cycle_callback, NULL, &cpuTimer);

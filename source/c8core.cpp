@@ -83,10 +83,9 @@ const uint8_t data[114] = {
     0x12, 0x64
 };
 
-
 C8Core::C8Core() {}
 
-void C8Core::init(char *rom) {
+void C8Core::init() {
     //init & clear display
     display = new SSD1306(128, 32, spi0, 8000*1000, 19, 16, 18, 20, 17);
     display->init();
@@ -116,7 +115,7 @@ void C8Core::init(char *rom) {
     t_sound = 0x0;
 
     //load ROM, also must be resident in RAM, chip8 is weird, yes programs can and will override themselves
-    for(int i = 0; i < (sizeof(rom) / sizeof(rom[0])); i++) {
+    for(int i = 0; i < file.filesize; i++) {
         ram[i + 0x200] = (uint8_t)rom[i];
     }
 

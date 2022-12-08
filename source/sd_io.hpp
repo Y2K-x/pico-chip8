@@ -16,13 +16,10 @@ class SD_IO {
         void init();
         uint32_t readFileCount();
         void readFileList();
-        void loadFileToBuffer(char *dest);
+        void loadFileToBuffer(char *dest, uint32_t index);
         File *files;
     private:
         sd_card_t *pSD;
-        
-
 };
-
 
 #endif
