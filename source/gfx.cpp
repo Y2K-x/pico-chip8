@@ -24,8 +24,6 @@ void GFX::drawChar(int x, int y, char chr) {
             }
         }
     }
-
-    ssd1306->update();
 }
 
 void GFX::drawString(int x, int y, char *str) {
@@ -36,7 +34,7 @@ void GFX::drawString(int x, int y, char *str) {
         drawChar((x + (i * 8)), y, str[i]);
 }
 
-void GFX::drawBmp(int x, int y, uint8_t *bmp, int w, int h) {
+void GFX::drawBmp(int x, int y, const uint8_t *bmp, int w, int h) {
     int16_t byteWidth = (w + 7) / 8;
     uint8_t b = 0;
 
@@ -51,7 +49,13 @@ void GFX::drawBmp(int x, int y, uint8_t *bmp, int w, int h) {
                 ssd1306->draw_pixel(x + i, y, SSD1306_COLOR_ON);
         }
     }
+}
 
+void GFX::clear() {
+    ssd1306->clear();
+}
+
+void GFX::update() {
     ssd1306->update();
 }
 
@@ -61,4 +65,8 @@ void GFX::setFont(const uint8_t *font) {
 
 const uint8_t* GFX::getFont() {
     return font;
+}
+
+SSD1306* GFX::display() {
+    return ssd1306;
 }

@@ -4,14 +4,43 @@
 #include "pico/stdlib.h"
 #include "ff.h"
 #include "f_util.h"
+#include "diskio.h"
 #include "hw_config.h"
 #include "sd_io.hpp"
+
+static void card_detect_callback(uint gpio, uint32_t events) {
+    static bool busy;
+    if(busy) return;
+    busy = true;
+
+    sd_card_t *sd = sd_get_by_num(0);
+    if(sd->card_detect_gpio == gpio) {
+        if(sd->mounted) {
+            printf("Card Detect Interrupt: unmounting %s\n", sd->pcName);
+            FRESULT fr = f_unmount(sd->pcName);
+            if(fr == FR_OK)
+                sd->mounted = false;
+            else
+                printf("f_unmount error: %s (%d)\n", FRESULT_str(fr), fr);
+        }
+
+        sd->m_Status |= STA_NOINIT;
+        sd_card_detect(sd);
+    }
+    busy = false;
+}
 
 SD_IO::SD_IO() {}
 
 void SD_IO::init() {
-    pSD = sd_get_by_num(0);
+    pSD = sd_get_by_num(0); 
+    if(pSD->use_card_detect)
+        gpio_set_irq_enabled_with_callback(pSD->card_detect_gpio, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &card_detect_callback);
     FRESULT fr = f_mount(&pSD->fatfs, pSD->pcName, 1);
+
+    if(!cardInserted())
+        return;
+
     if(fr != FR_OK) panic("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
     return;
 }
@@ -49,8 +78,8 @@ uint32_t SD_IO::readFileCount() {
 }
 
 void SD_IO::readFileList() {
-    uint32_t expectedFileCount = readFileCount();
-    files = new File[expectedFileCount];
+    uint32_t fileCount = readFileCount();
+    root = {.count = fileCount, .files = new File[fileCount]};
 
     char cwdbuf[FF_LFN_BUF] = {0};
     FRESULT fr;
@@ -76,7 +105,7 @@ void SD_IO::readFileList() {
     while(fr == FR_OK && fno.fname[0]) {
         File file = {.filesize = (uint32_t)fno.fsize, .filename = (char *)malloc(strlen(fno.fname) + 1)};
         strncpy(file.filename, fno.fname, strlen(fno.fname) + 1);
-        files[count] = file;
+        root.files[count] = file;
 
         fr = f_findnext(&dir, &fno);
         count++;
@@ -88,22 +117,38 @@ void SD_IO::readFileList() {
     return;
 }
 
+/*
 void SD_IO::loadFileToBuffer(char *dest, uint32_t index) {
     FIL file;
     FRESULT fr;
     
-    fr = f_open(&file, files[index].filename, FA_READ);
+    fr = f_open(&file, root.files[index].filename, FA_READ);
     if(fr != FR_OK)
-        panic("f_open(%s) error: %s (%d)\n", files[index], FRESULT_str(fr), fr);
+        panic("f_open(%s) error: %s (%d)\n", root.files[index], FRESULT_str(fr), fr);
 
     unsigned int bytesRead = 0;
-    f_read(&file, dest, files[index].filesize, &bytesRead);
+    f_read(&file, dest, root.files[index].filesize, &bytesRead);
 
     f_close(&file);
 }
+*/
 
 
 
+void SD_IO::loadFileToBuffer(char *dest, File *file) {
+    FIL fil;
+    FRESULT fr;
+    
+    fr = f_open(&fil, file->filename, FA_READ);
+    if(fr != FR_OK)
+        panic("f_open(%s) error: %s (%d)\n", file->filename, FRESULT_str(fr), fr);
 
+    unsigned int bytesRead = 0;
+    f_read(&fil, dest, file->filesize, &bytesRead);
 
+    f_close(&fil);
+}
 
+bool SD_IO::cardInserted() {
+    return pSD->card_type == 0 ? false : true;
+}

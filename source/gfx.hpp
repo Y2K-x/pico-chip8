@@ -107,14 +107,17 @@ class GFX {
     const uint8_t* font = fnt;
 
     public:
-        GFX(SSD1306 *ssd1306);
+        GFX(SSD1306 *display);
 
         void drawChar(int x, int y, char chr);
         void drawString(int x, int y, char *str);
-        void drawBmp(int x, int y, uint8_t *bmp, int w, int h);
+        void drawBmp(int x, int y, const uint8_t *bmp, int w, int h);
+        void update();
+        void clear();
 
         void setFont(const uint8_t *font);
         const uint8_t* getFont();
+        SSD1306* display();
     private:
         SSD1306 *ssd1306;
 };

@@ -26,7 +26,7 @@ class C8Core {
 
         uint8_t key[16];
         char *rom;
-        File file;
+        File *file;
     private:
         SSD1306 *display;
 

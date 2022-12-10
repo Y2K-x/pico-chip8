@@ -21,8 +21,8 @@ static sd_card_t sd_cards[] = {
         .pcName = "0:",
         .spi = &spis[0],
         .ss_gpio = 13,
-        .use_card_detect = false,
-        .card_detect_gpio = 0,
+        .use_card_detect = true,
+        .card_detect_gpio = 14,
         .card_detected_true = 0,
         .m_Status = STA_NOINIT
     }

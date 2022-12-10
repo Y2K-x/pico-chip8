@@ -87,11 +87,7 @@ C8Core::C8Core() {}
 
 void C8Core::init(SSD1306 *display) {
     //init clear display
-    //this->display = display;
-    this->display = new SSD1306(128, 64, spi0, 8000*1000, 19, 16, 18, 20, 17);
-    this->display->init();
-    this->display->clear();
-    this->display->update();
+    this->display = display;
 
     //init registers and memory
     pc = 0x200;
@@ -116,7 +112,7 @@ void C8Core::init(SSD1306 *display) {
     t_sound = 0x0;
 
     //load ROM, also must be resident in RAM, chip8 is weird, yes programs can and will override themselves
-    for(int i = 0; i < file.filesize; i++) {
+    for(int i = 0; i < file->filesize; i++) {
         ram[i + 0x200] = (uint8_t)rom[i];
     }
 

@@ -10,14 +10,21 @@ typedef struct File {
     char *filename;
 } File;
 
+typedef struct Directory {
+    uint32_t count;
+    File *files;
+} Directory;
+
 class SD_IO {
     public:
         SD_IO();
         void init();
         uint32_t readFileCount();
         void readFileList();
-        void loadFileToBuffer(char *dest, uint32_t index);
-        File *files;
+        //void loadFileToBuffer(char *dest, uint32_t index);
+        void loadFileToBuffer(char *dest, File *file);
+        bool cardInserted();
+        Directory root;
     private:
         sd_card_t *pSD;
 };

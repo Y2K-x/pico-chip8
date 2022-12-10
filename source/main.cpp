@@ -9,36 +9,17 @@ Created for the BitBuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.ph
 #include "pico/stdlib.h"
 #include "c8core.hpp"
 #include "sd_io.hpp"
-#include "gfx.hpp"
+#include "menu.hpp"
+
+#define PIN_SPEAKER 8
+#define PIN_CD 14
 
 const int row_pins[4] = {0,1,2,3};
 const int col_pins[4] = {7,6,5,4};
 
-uint8_t nosd_bmp[36] = {
-	0x3f, 0xfc, 
-	0x20, 0x04, 
-	0x20, 0x04, 
-	0x20, 0x04, 
-	0x21, 0x04, 
-	0x21, 0x04, 
-	0x21, 0x04, 
-	0x41, 0x04, 
-	0x81, 0x04, 
-	0x81, 0x04, 
-	0x41, 0x04, 
-	0x80, 0x04, 
-	0x80, 0x04, 
-	0x81, 0x04, 
-	0x80, 0x04, 
-	0x80, 0x04, 
-	0x80, 0x04, 
-	0xff, 0xfc, 
-};
-
 SSD1306 *display;
+Menu *menu;
 C8Core *core;
-SD_IO *sd_io;
-GFX *gfx;
 
 struct repeating_timer cpuTimer;
 struct repeating_timer timerUpdateTimer;
@@ -62,13 +43,13 @@ bool core_timer_callback(struct repeating_timer *t) {
 int main() {
     //init serial output
     stdio_init_all();
+    sleep_ms(2000);
 
     //init display
-    //display = new SSD1306(128, 64, spi0, 8000*1000, 19, 16, 18, 20, 17);
-    //display->init();
-    //hexDump("blah", display->buffer(), 512, 16);
-    //display->clear();
-    //display->update();
+    display = new SSD1306(128, 64, spi0, 8000*1000, 19, 16, 18, 20, 17);
+    display->init();
+    display->clear();
+    display->update();
 
     //init input pins
     for(int i = 0; i < 4; i++) {
@@ -81,31 +62,37 @@ int main() {
         gpio_pull_down(col_pins[i]);
     }
 
+    //init card detect pin
+    gpio_init(PIN_CD);
+    gpio_set_dir(PIN_CD, false);
+    gpio_pull_up(PIN_CD);
+
     //init speaker
-    gpio_init(8);
-    gpio_set_dir(8, true);
-    gpio_pull_down(8);
+    gpio_init(PIN_SPEAKER);
+    gpio_set_dir(PIN_SPEAKER, true);
+    gpio_pull_down(PIN_SPEAKER);
 
-    //init SD
-    sd_io = new SD_IO();
-    sd_io->init();
-    sd_io->readFileList();
-
-    //gfx = new GFX(display);
-    //gfx->drawBmp(56, 18, nosd_bmp, 16, 18);
-    //gfx->drawString(45, 39, "NO SD");
+    menu = new Menu();
+    menu->init(display);
 
     //beep test, may remove later but its kinda charming lol
     gpio_put(8, true);
     sleep_ms(100);
     gpio_put(8, false);
+    
+    while(1) {
+        //update menu until it returns back true, meaning user has selected a file
+        if(menu->update())
+            break;
+    }
 
     //init CHIP-8 core
+    display->clear();
+    display->update();
     core = new C8Core();
-    uint32_t index = 11;
-    core->rom = (char *)malloc(sd_io->files[index].filesize);
-    core->file = sd_io->files[index];
-    sd_io->loadFileToBuffer(core->rom, index);
+    core->file = menu->selection;
+    core->rom = (char *)malloc(menu->selection->filesize);
+    menu->sdio->loadFileToBuffer(core->rom, menu->selection);
     core->init(display);
 
     //start update timers for CPU cycle & timers
