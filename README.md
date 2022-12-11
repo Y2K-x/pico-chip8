@@ -18,6 +18,7 @@ To upload, plug in your RPi Pico while holding the BOOTSEC button, then drag the
 Wiring is fairly straightforward. For button input you'll want a 4x4 button matrix. Those membrane keypads might work but I have not tried them, but otherwise, each row of buttons has one end of the switch wired together, and each collumn has the other end wired together.
 
 GP0 through GP3 - row 1 through row 4
+
 GP4 through GP7 - col 4 through col 1 (yes, backwards, made more sense when wiring my unit up)
 
 ~ Display ~
