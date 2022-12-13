@@ -91,6 +91,7 @@ class SDMenu {
         
         MenuState getState();
         File * getSelection();
+        void loadFile(uint8_t *dest);
     private:
         void LoadFiles();
         void updateInputState();

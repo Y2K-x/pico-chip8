@@ -32,9 +32,12 @@ SSD1306 *display;
 C8Core core;
 SDMenu menu;
 
+struct repeating_timer cpuTimer;
+struct repeating_timer timerUpdateTimer;
+
 //CHIP-8 CPU core clock cycle callback - runs at aprox. 500hz
 bool core_cycle_callback(struct repeating_timer *t) {
-    //readInput();
+    core.pollInput();
     core.runCycle();
     core.draw();
     return true;
@@ -59,10 +62,6 @@ void gpio_pull_down_masked(uint32_t mask) {
 }
 
 int main() {
-    stdio_init_all();
-    sleep_ms(2000);
-
-
     //init input GPIO
     gpio_init_mask(ROW_MASK + COL_MASK);
     gpio_set_dir_out_masked(ROW_MASK);
@@ -108,13 +107,23 @@ int main() {
                 state = MainState::CoreInit;
                 break;
             
-            case MainState::CoreInit:
+            case MainState::CoreInit: {
                 //init core
-                //load rom
+                core.init(display);
+
+                //load ROM
+                uint8_t *rom = (uint8_t *)malloc(menu.getSelection()->filesize);
+                menu.loadFile(rom);
+                core.loadROM(rom, menu.getSelection()->filesize);
+
                 //setup timer interupts
+                add_repeating_timer_us(2000, core_cycle_callback, NULL, &cpuTimer); //~500hz
+                add_repeating_timer_us(16666, core_timer_callback, NULL, &timerUpdateTimer); //~60hz
+
                 state = MainState::CoreRunning;
                 break;
-            
+            }
+
             case MainState::CoreRunning:
                 break; //run forever, core is running from hardware timers
         }

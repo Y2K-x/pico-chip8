@@ -47,7 +47,7 @@ void SDMenu::update() {
             break;
         
         case MenuState::File:
-            if(sdio->root.count == 0) {
+            if(sdio->getRoot()->count == 0) {
                 state = MenuState::NoFiles;
                 break;
             }
@@ -65,12 +65,12 @@ void SDMenu::update() {
             if(newState->down && !oldState->down) {
                 index++;
 
-                if(index > (int)sdio->root.count - 1)
-                    index = sdio->root.count - 1;
+                if(index > (int)sdio->getRoot()->count - 1)
+                    index = sdio->getRoot()->count - 1;
             }
 
             if(newState->select && !oldState->select) {
-                selection = new File{.filesize = sdio->root.files[index].filesize, .filename = sdio->root.files[index].filename};
+                selection = new File{.filesize = sdio->getRoot()->files[index].filesize, .filename = sdio->getRoot()->files[index].filename};
                 state = MenuState::Done;
             }
 
@@ -165,13 +165,14 @@ void SDMenu::drawFilePicker() {
     gfx->clear();
 
     int page = index / MAX_FILES_PER_PAGE;
+    Directory *root = sdio->getRoot();
 
     for(int i = 0; i < MAX_FILES_PER_PAGE; i++) {
-        if(i + (page * MAX_FILES_PER_PAGE) < (int)sdio->root.count) {
+        if(i + (page * MAX_FILES_PER_PAGE) < (int)root->count) {
             if(i == (index - (page * MAX_FILES_PER_PAGE)))
                 gfx->drawString(0, 4 + (i * 8), "> ");
 
-            gfx->drawString(16, 4 + (i * 8), sdio->root.files[i + (page * 7)].filename);
+            gfx->drawString(16, 4 + (i * 8), root->files[i + (page * 7)].filename);
         }
     }
 
@@ -187,4 +188,11 @@ SDMenu::MenuState SDMenu::getState() {
 
 File * SDMenu::getSelection() {
     return selection;
+}
+
+void SDMenu::loadFile(uint8_t *dest) {
+    if(!sdio->cardInserted())
+        return;
+
+    sdio->loadFileToBuffer(dest, selection);
 }

@@ -38,10 +38,9 @@ const unsigned char font[80] = {
 C8Core::C8Core() {}
 
 void C8Core::init(SSD1306 *display) {
-    //init clear display
     this->display = display;
 
-    //init registers and memory
+    //clear registers and memory
     pc = 0x200;
     opcode = 0;
     index = 0;
@@ -62,11 +61,6 @@ void C8Core::init(SSD1306 *display) {
     //reset timers
     t_delay = 0x0;
     t_sound = 0x0;
-
-    //load ROM, also must be resident in RAM, chip8 is weird, yes programs can and will override themselves
-    for(int i = 0; i < file->filesize; i++) {
-        ram[i + 0x200] = (uint8_t)rom[i];
-    }
 
     return;
 }
@@ -431,6 +425,34 @@ void C8Core::draw() {
         display->update(); //update display
         drawReady = 0; //done
     }
+    return;
+}
+
+void C8Core::loadROM(uint8_t *rom, uint32_t size) {
+    //return if ROM is too big to fit into Chip8 RAM
+    if(size > 3584)
+        return;
+
+    //load ROM, also must be resident in RAM, chip8 is weird, yes programs can and will override themselves
+    memcpy(&ram[0x200], rom, size);
+}
+
+void C8Core::pollInput() {
+    //poll all rows
+    for(int row = 0; row < 4; row++) {
+        //set current row pin high
+        gpio_put(row_pins[row], true);
+
+        //poll all columns
+        for(int col = 0; col < 4; col++) {
+            //map all physical key states to CHIP-8 core keymap & store in core's keypad registers
+            key[keyMap[row][col]] = (uint8_t)gpio_get(col_pins[col]);
+        }
+
+        //done with this row, start polling next row
+        gpio_put(row_pins[row], false);
+    }
+    
     return;
 }
 
