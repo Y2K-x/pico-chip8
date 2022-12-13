@@ -16,7 +16,7 @@ add_executable(${PROJECT_NAME}
     source/ssd1306.cpp
     source/sd_config.cpp
     source/sd_io.cpp
-    source/menu.cpp
+    source/sdmenu.cpp
     source/gfx.cpp
 )
 
