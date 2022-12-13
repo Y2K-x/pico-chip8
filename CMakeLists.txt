@@ -22,6 +22,8 @@ add_executable(${PROJECT_NAME}
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
+target_compile_options(${PROJECT_NAME} PUBLIC "-Wall")
+
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_runtime
