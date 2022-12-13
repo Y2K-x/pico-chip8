@@ -22,10 +22,11 @@ class SD_IO {
         uint32_t readFileCount();
         void readFileList();
         //void loadFileToBuffer(char *dest, uint32_t index);
-        void loadFileToBuffer(char *dest, File *file);
+        void loadFileToBuffer(uint8_t *dest, File *file);
         bool cardInserted();
-        Directory root;
+        Directory * getRoot();
     private:
+        Directory *root;
         sd_card_t *pSD;
 };
 

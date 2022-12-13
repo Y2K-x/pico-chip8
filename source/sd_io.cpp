@@ -51,7 +51,7 @@ uint32_t SD_IO::readFileCount() {
     char cwdbuf[FF_LFN_BUF] = {0};
     FRESULT fr;
 
-    fr - f_getcwd(cwdbuf, sizeof cwdbuf);
+    fr = f_getcwd(cwdbuf, sizeof cwdbuf);
     if(fr != FR_OK) {
         printf("f_getcwd error: %s (%d)\n", FRESULT_str(fr), fr);
         return 0;
@@ -79,12 +79,12 @@ uint32_t SD_IO::readFileCount() {
 
 void SD_IO::readFileList() {
     uint32_t fileCount = readFileCount();
-    root = {.count = fileCount, .files = new File[fileCount]};
+    root = new Directory{.count = fileCount, .files = new File[fileCount]};
 
     char cwdbuf[FF_LFN_BUF] = {0};
     FRESULT fr;
 
-    fr - f_getcwd(cwdbuf, sizeof cwdbuf);
+    fr = f_getcwd(cwdbuf, sizeof cwdbuf);
     if(fr != FR_OK) {
         printf("f_getcwd error: %s (%d)\n", FRESULT_str(fr), fr);
         return;
@@ -105,7 +105,7 @@ void SD_IO::readFileList() {
     while(fr == FR_OK && fno.fname[0]) {
         File file = {.filesize = (uint32_t)fno.fsize, .filename = (char *)malloc(strlen(fno.fname) + 1)};
         strncpy(file.filename, fno.fname, strlen(fno.fname) + 1);
-        root.files[count] = file;
+        root->files[count] = file;
 
         fr = f_findnext(&dir, &fno);
         count++;
@@ -117,25 +117,7 @@ void SD_IO::readFileList() {
     return;
 }
 
-/*
-void SD_IO::loadFileToBuffer(char *dest, uint32_t index) {
-    FIL file;
-    FRESULT fr;
-    
-    fr = f_open(&file, root.files[index].filename, FA_READ);
-    if(fr != FR_OK)
-        panic("f_open(%s) error: %s (%d)\n", root.files[index], FRESULT_str(fr), fr);
-
-    unsigned int bytesRead = 0;
-    f_read(&file, dest, root.files[index].filesize, &bytesRead);
-
-    f_close(&file);
-}
-*/
-
-
-
-void SD_IO::loadFileToBuffer(char *dest, File *file) {
+void SD_IO::loadFileToBuffer(uint8_t *dest, File *file) {
     FIL fil;
     FRESULT fr;
     
@@ -151,4 +133,8 @@ void SD_IO::loadFileToBuffer(char *dest, File *file) {
 
 bool SD_IO::cardInserted() {
     return pSD->card_type == 0 ? false : true;
+}
+
+Directory * SD_IO::getRoot() {
+    return root;
 }
