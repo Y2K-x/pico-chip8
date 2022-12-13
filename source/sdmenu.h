@@ -55,11 +55,11 @@ class SDMenu {
     };
 
     public:
-        enum class MenuState {
-            NoSD,
-            Load,
-            File,
-            Done
+        enum MenuState {
+            MENU_NOSD,
+            MENU_LOAD,
+            MENU_FILE,
+            MENU_DONE
         };
         
         SDMenu();

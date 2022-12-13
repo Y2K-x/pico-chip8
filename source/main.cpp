@@ -9,7 +9,7 @@ Created for the BitBuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.ph
 #include "pico/stdlib.h"
 #include "c8core.h"
 #include "sd_io.h"
-#include "menu.h"
+#include "sdmenu.h"
 
 #define PIN_SPEAKER 8
 #define PIN_CD 14
@@ -18,7 +18,7 @@ const int row_pins[4] = {0,1,2,3};
 const int col_pins[4] = {7,6,5,4};
 
 SSD1306 *display;
-Menu *menu;
+SDMenu *menu;
 C8Core *core;
 
 struct repeating_timer cpuTimer;
@@ -72,7 +72,7 @@ int main() {
     gpio_set_dir(PIN_SPEAKER, true);
     gpio_pull_down(PIN_SPEAKER);
 
-    menu = new Menu();
+    menu = new SDMenu();
     menu->init(display);
 
     //beep test, may remove later but its kinda charming lol

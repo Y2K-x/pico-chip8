@@ -5,7 +5,7 @@
 #include "ssd1306.h"
 #include "math.h"
 
-SDMenu::Menu() {}
+SDMenu::SDMenu() {}
 
 void SDMenu::init(SSD1306 *display) {
     menuState = MENU_LOAD;
