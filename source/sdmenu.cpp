@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
-#include "menu.h"
+#include "sdmenu.h"
 #include "ssd1306.h"
 #include "math.h"
 
-Menu::Menu() {}
+SDMenu::Menu() {}
 
-void Menu::init(SSD1306 *display) {
+void SDMenu::init(SSD1306 *display) {
     menuState = MENU_LOAD;
     
     gfx = new GFX(display);
@@ -28,7 +28,7 @@ void Menu::init(SSD1306 *display) {
 
 }
 
-bool Menu::update() {
+bool SDMenu::update() {
     if(!sdio->cardInserted())
         menuState = MENU_NOSD;
 
@@ -99,21 +99,21 @@ bool Menu::update() {
     return false;
 }
 
-void Menu::drawNoSD() {
+void SDMenu::drawNoSD() {
     gfx->clear();
     gfx->drawBmp(56, 18, nosd_bmp, 16, 18);
     gfx->drawString(45, 39, (char *)"NO SD");
     gfx->update();
 }
 
-void Menu::drawLoading() {
+void SDMenu::drawLoading() {
     gfx->clear();
     gfx->drawBmp(56, 18, load_bmp, 16, 18);
     gfx->drawString(37, 39, (char *)"LOADING");
     gfx->update();
 }
 
-void Menu::drawFilePicker() {
+void SDMenu::drawFilePicker() {
     gfx->clear();
     int y = 4;
     
@@ -131,7 +131,7 @@ void Menu::drawFilePicker() {
 
 }
 
-void Menu::updateInput() {
+void SDMenu::updateInput() {
     bool upBtn = false, downBtn = false, selBtn = false;
 
     //check up btn
@@ -150,7 +150,7 @@ void Menu::updateInput() {
     gpio_put(0, false);
 }
 
-void Menu::LoadFiles() {
+void SDMenu::LoadFiles() {
     sdio->readFileList();
     page = 0;
     index = 0;

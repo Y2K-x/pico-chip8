@@ -11,7 +11,7 @@ typedef struct InputState {
     bool select;
 } InputState;
 
-class Menu {
+class SDMenu {
     const uint8_t nosd_bmp[36] = {
         0x3f, 0xfc, 
         0x20, 0x04, 
@@ -55,14 +55,14 @@ class Menu {
     };
 
     public:
-        enum MenuState {
-            MENU_NOSD,
-            MENU_LOAD,
-            MENU_FILE,
-            MENU_DONE
+        enum class MenuState {
+            NoSD,
+            Load,
+            File,
+            Done
         };
         
-        Menu();
+        SDMenu();
         void init(SSD1306 *display);
 
         bool update();
