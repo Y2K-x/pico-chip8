@@ -117,24 +117,6 @@ void SD_IO::readFileList() {
     return;
 }
 
-/*
-void SD_IO::loadFileToBuffer(char *dest, uint32_t index) {
-    FIL file;
-    FRESULT fr;
-    
-    fr = f_open(&file, root.files[index].filename, FA_READ);
-    if(fr != FR_OK)
-        panic("f_open(%s) error: %s (%d)\n", root.files[index], FRESULT_str(fr), fr);
-
-    unsigned int bytesRead = 0;
-    f_read(&file, dest, root.files[index].filesize, &bytesRead);
-
-    f_close(&file);
-}
-*/
-
-
-
 void SD_IO::loadFileToBuffer(char *dest, File *file) {
     FIL fil;
     FRESULT fr;

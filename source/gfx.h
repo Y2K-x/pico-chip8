@@ -110,7 +110,7 @@ class GFX {
         GFX(SSD1306 *display);
 
         void drawChar(int x, int y, char chr);
-        void drawString(int x, int y, char *str);
+        void drawString(int x, int y, const char *str);
         void drawBmp(int x, int y, const uint8_t *bmp, int w, int h);
         void update();
         void clear();

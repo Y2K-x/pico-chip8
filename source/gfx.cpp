@@ -26,7 +26,7 @@ void GFX::drawChar(int x, int y, char chr) {
     }
 }
 
-void GFX::drawString(int x, int y, char *str) {
+void GFX::drawString(int x, int y, const char *str) {
     int length = strlen(str);
     if (length > 14) length = 14; //truncate string length to fit display
 
