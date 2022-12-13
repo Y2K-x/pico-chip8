@@ -10,7 +10,7 @@ Some opcode implementations borrowed from here due to time restraints: https://g
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "ssd1306.h"
-#include "c8core.hpp"
+#include "c8core.h"
 
 //comment to disable printing to serial when CPU core encounters an unknown opcode
 //#define PRINT_UNK_OPCODE

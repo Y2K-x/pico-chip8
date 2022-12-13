@@ -2,7 +2,7 @@
 #include <string.h>
 #include <utility>
 #include <cmath>
-#include "gfx.hpp"
+#include "gfx.h"
 #include "ssd1306.h"
 
 GFX::GFX(SSD1306 *ssd1306) {

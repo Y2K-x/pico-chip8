@@ -2,7 +2,7 @@
 #define C8CORE_H
 
 #include "ssd1306.h"
-#include "sd_io.hpp"
+#include "sd_io.h"
 
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32

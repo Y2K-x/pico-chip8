@@ -6,7 +6,7 @@
 #include "f_util.h"
 #include "diskio.h"
 #include "hw_config.h"
-#include "sd_io.hpp"
+#include "sd_io.h"
 
 static void card_detect_callback(uint gpio, uint32_t events) {
     static bool busy;

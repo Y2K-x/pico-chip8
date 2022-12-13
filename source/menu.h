@@ -1,9 +1,9 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include "gfx.hpp"
+#include "gfx.h"
 #include "ssd1306.h"
-#include "sd_io.hpp"
+#include "sd_io.h"
 
 typedef struct InputState {
     bool up;

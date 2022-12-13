@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
-#include "menu.hpp"
+#include "menu.h"
 #include "ssd1306.h"
 #include "math.h"
 

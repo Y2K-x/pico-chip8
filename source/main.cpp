@@ -7,9 +7,9 @@ Created for the BitBuilt 2022 Secret Santa (https://bitbuilt.net/forums/index.ph
 #include <stdio.h>
 #include <stdlib.h>
 #include "pico/stdlib.h"
-#include "c8core.hpp"
-#include "sd_io.hpp"
-#include "menu.hpp"
+#include "c8core.h"
+#include "sd_io.h"
+#include "menu.h"
 
 #define PIN_SPEAKER 8
 #define PIN_CD 14
