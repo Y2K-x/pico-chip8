@@ -90,6 +90,7 @@ class SDMenu {
         void draw();
         
         MenuState getState();
+        File * getSelection();
     private:
         void LoadFiles();
         void updateInputState();
@@ -106,9 +107,7 @@ class SDMenu {
         InputState *oldState;
         MenuState state;
 
-        uint32_t index;
-        uint32_t page;
-        uint32_t pageCount;
+        int index;
         
 };
 

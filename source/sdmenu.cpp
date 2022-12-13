@@ -18,10 +18,6 @@ void SDMenu::init(SSD1306 *display) {
     newState = new InputState();
     oldState = new InputState();
 
-    index = 0;
-    page = 0;
-    pageCount = 0;
-
     return;
 }
 
@@ -36,6 +32,9 @@ void SDMenu::update() {
                 LoadFiles();
                 state = MenuState::File;
             }
+            break;
+        
+        case MenuState::NoFiles:
             break;
 
         case MenuState::Load:
@@ -59,31 +58,15 @@ void SDMenu::update() {
             if(newState->up && !oldState->up) {
                 index--;
 
-                if(page == 0) {
-                    if(index <= -1) {
-                        index = 0;
-                    }
-                }
-                else {
-                    if(index < (page * 7)) {
-                        page--;
-                    }
-                }
+                if(index < 0)
+                    index = 0;
             }
 
             if(newState->down && !oldState->down) {
                 index++;
 
-                if(page == pageCount - 1) {
-                    if(index > sdio->root.count - 1)
-                        index = sdio->root.count - 1;
-                }
-                else {
-                    if(index >= (((page + 1) * 7)))
-                        page++;
-                }
-
-                printf("index: %i | page: %i\n", index, page);
+                if(index > (int)sdio->root.count - 1)
+                    index = sdio->root.count - 1;
             }
 
             if(newState->select && !oldState->select) {
@@ -93,6 +76,9 @@ void SDMenu::update() {
 
             //copy newState to oldState for input debouncing
             memcpy(oldState, newState, sizeof(InputState));
+            break;
+        
+        case MenuState::Done:
             break;
     }
 
@@ -108,21 +94,26 @@ void SDMenu::draw() {
         case MenuState::NoFiles:
             drawNoFiles();
             break;
-        
+
+        case MenuState::Load:
+            drawLoading();
+            break;
+
         case MenuState::File:
             drawFilePicker();
             break;
+
+        case MenuState::Done:
+            break;
     }
 
-    return;
+    return;    index = 0;
 }
 
 /* Private Method Definitions */
 void SDMenu::LoadFiles() {
     sdio->readFileList();
-    page = 0;
     index = 0;
-    pageCount = (int)ceil((double)sdio->root.count / 7);
     return;
 }
 
@@ -173,8 +164,10 @@ void SDMenu::drawLoading() {
 void SDMenu::drawFilePicker() {
     gfx->clear();
 
+    int page = index / MAX_FILES_PER_PAGE;
+
     for(int i = 0; i < MAX_FILES_PER_PAGE; i++) {
-        if(i + (page * 7) < sdio->root.count) {
+        if(i + (page * MAX_FILES_PER_PAGE) < (int)sdio->root.count) {
             if(i == (index - (page * MAX_FILES_PER_PAGE)))
                 gfx->drawString(0, 4 + (i * 8), "> ");
 
@@ -190,4 +183,8 @@ void SDMenu::drawFilePicker() {
 /* Getters and Setters */
 SDMenu::MenuState SDMenu::getState() {
     return state;
+}
+
+File * SDMenu::getSelection() {
+    return selection;
 }
